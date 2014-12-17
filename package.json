@@ -1,0 +1,13 @@
+{
+  "name": "flux-data-mysql",
+  "version": "1.0.0",
+  "description": "MySQL Adapter for flux-data",
+  "author": "Justin Pradier <chromecide@chromecide.com>",
+  "keywords": [
+    "chromecide",
+    "flux-data",
+    "Top Down Data",
+    "mysql"
+  ],
+  "dependencies": {}
+}
