@@ -61,7 +61,7 @@ var MySQLStore = function(params, callbacks){
         removeRecords(this, records, [], cbs);
     };
 
-    this.loadModels = function(cbs){
+    this.loadModelConfig = function(cbs){
         var self = this;
 
         var tableSQL = 'SHOW TABLES;';

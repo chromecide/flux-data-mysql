@@ -9,5 +9,7 @@
     "Top Down Data",
     "mysql"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "mysql": "~2.5.4"
+  }
 }
