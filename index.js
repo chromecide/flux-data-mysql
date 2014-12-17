@@ -253,13 +253,13 @@ var MySQLStore = function(params, callbacks){
 
         var dataValues = recordItem.dataValues;
         var model = recordItem.model;
-        var fields = model.fields;
+        var fields = model.config.fields;
 
         var setFields = [];
-        var pkField = model.pk_field||'id';
+        var pkField = model.config.pk_field||'id';
 
         if(dataValues.id){ //update
-            saveSQL = 'UPDATE '+model.collection+' SET ';
+            saveSQL = 'UPDATE '+model.config.collection+' SET ';
             for(var key in fields){
                 if(key!=pkField){
                     if(recordItem.get(key)){
@@ -278,7 +278,7 @@ var MySQLStore = function(params, callbacks){
             recordItem.set('created_at', new Date());
             recordItem.set('modified_at', new Date());
 
-            saveSQL = 'INSERT INTO '+model.collection+' (';
+            saveSQL = 'INSERT INTO '+model.config.collection+' (';
             valueSQL = '';
             for(var key in fields){
                 console.log(recordItem.get(key));
@@ -343,10 +343,10 @@ var MySQLStore = function(params, callbacks){
 
     function removeRecord(self, recordItem, cbs){
         var model = recordItem.model;
-        var fields = model.fields;
+        var fields = model.config.fields;
 
-        var pkField = model.pk_field||'id';
-        var removeSQL = 'UPDATE '+model.collection+' SET deleted_at=?, deleted_by=? WHERE '+pkField+' = ?;';
+        var pkField = model.config.pk_field||'id';
+        var removeSQL = 'UPDATE '+model.config.collection+' SET deleted_at=?, deleted_by=? WHERE '+pkField+' = ?;';
 
         var setFields = [new Date(), recordItem.get('deleted_by'), recordItem.get(pkField)];
 
@@ -376,7 +376,7 @@ var MySQLStore = function(params, callbacks){
             querySQL+='* ';
         }
 
-        querySQL+=' FROM '+model.collection;
+        querySQL+=' FROM '+model.config.collection;
         console.log(queryData);
         if(queryData.where){
             querySQL+=' WHERE ';
