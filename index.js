@@ -367,6 +367,7 @@ var MySQLStore = function(params, callbacks){
     function objectToQuery(self, model, queryData, cbs){
         var querySQL = 'SELECT ';
         var valueArray = [];
+        
         if(queryData.fields){
             for(var i=0;i<queryData.fields.length;i++){
                 querySQL+='`'+queryData.fields[i]+'`,';
@@ -377,7 +378,7 @@ var MySQLStore = function(params, callbacks){
         }
 
         querySQL+=' FROM '+model.config.collection;
-        console.log(queryData);
+        
         if(queryData.where){
             querySQL+=' WHERE ';
 
