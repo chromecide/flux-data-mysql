@@ -390,11 +390,11 @@ var MySQLStore = function(params, callbacks){
                             case 'eq':
                                 if(fieldCrit[fieldOp].length>1){
                                     querySQL+=fieldName+' IN (?) AND ';
+                                    valueArray.push(fieldCrit[fieldOp]);
                                 }else{
-                                    querySQL+=fieldName+'=? AND';
+                                    querySQL+=fieldName+'=? AND ';
                                     valueArray.push(fieldCrit[fieldOp][0]);
                                 }
-                                
                                 break;
                             case 'gt':
                                 if(fieldCrit[fieldOp].length>1){
@@ -418,7 +418,11 @@ var MySQLStore = function(params, callbacks){
                     if(fieldCrit===null){
                         querySQL+=fieldName+' IS ? AND ';
                     }else{
-                        querySQL+=fieldName+'=? AND ';
+                        if(fieldCrit.length>1){
+                            querySQL+=fieldName+' IN (?) AND ';
+                        }else{
+                            querySQL+=fieldName+'=? AND ';
+                        }
                     }
                     
                     valueArray.push(fieldCrit);
