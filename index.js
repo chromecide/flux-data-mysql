@@ -42,7 +42,7 @@ var MySQLStore = function(params, callbacks){
 
     this.read = function(model, params, cbs){
         var query = objectToQuery(this, model, params);
-        
+        console.log(query);
         this.connection.query(query.sql, query.values, function(err, res){
             if(err){
                 console.log(err);
