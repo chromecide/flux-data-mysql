@@ -17,13 +17,13 @@ var MySQLStore = function(params, callbacks){
 
         this.connection.connect(function(err) {
             if (err) {
-                if(cbs.error){
-                    cbs.error(err.stack, self);
+                if(cbs){
+                    cbs(err, self);
                 }
                 return;
             }else{
-                if(cbs.success){
-                    cbs.success(self);
+                if(cbs){
+                    cbs(false, self);
                 }
             }
         });
@@ -31,8 +31,8 @@ var MySQLStore = function(params, callbacks){
 
     this.disconnect = function(cbs){
         this.connection.end();
-        if(cbs.success){
-            cbs.success();
+        if(cbs){
+            cbs(false);
         }
     };
 
@@ -43,15 +43,16 @@ var MySQLStore = function(params, callbacks){
     this.read = function(model, params, cbs){
         var query = objectToQuery(this, model, params);
         console.log(query);
-        this.connection.query(query.sql, query.values, function(err, res){
+        var self = this;
+        var tester = this.connection.query(query.sql, query.values, function(err, res){
             if(err){
                 console.log(err);
-                if(cbs.error){
-                    cbs.error(err, res);
+                if(cbs){
+                    cbs(err, res);
                 }
             }else{
-                if(cbs.success){
-                    cbs.success(res);
+                if(cbs){
+                    cbs(false, res);
                 }
             }
         });
@@ -72,8 +73,8 @@ var MySQLStore = function(params, callbacks){
                 modelNames.push(res[i][Object.keys(res[i])[0]]);
             }
 
-            loadAllTableData(self, modelNames, {}, {
-                success: function(data){
+            loadAllTableData(self, modelNames, {}, function(err, data){
+                if(!err){
                     console.log(data);
 
                     //turn the data into model configurations
@@ -115,13 +116,12 @@ var MySQLStore = function(params, callbacks){
 
                         }
                     }
-                    if(cbs && cbs.success){
-                        cbs.success(modelConfigs);
+                    if(cbs && cbs){
+                        cbs(false, modelConfigs);
                     }
-                },
-                error: function(err){
-                    if(cbs && cbs.error){
-                        cbs.error(err);
+                }else{
+                    if(cbs && cbs){
+                        cbs(err);
                     }
                 }
             });
@@ -129,42 +129,40 @@ var MySQLStore = function(params, callbacks){
     };
 
     if(this.params.autoconnect){
-        this.connect(this.params, {
-            success: function(){
-                if(callbacks.success){
-                    callbacks.success(self);
+        this.connect(this.params, function(err){
+            if(!err){
+                if(callbacks){
+                    callbacks(false, self);
                 }
-            },
-            error: function(e){
-                if(callbacks.error){
-                    callbacks.error(e, self);
+            }else{
+                if(callbacks){
+                    callbacks(err, self);
                 }
             }
         });
     }else{
-        if(callbacks.success){
-            callbacks.success(this);
+        if(callbacks){
+            callbacks(false, this);
         }
     }
 };
 
     function loadAllTableData(self, tableNames, loadedTables, cbs){
         if(tableNames.length===0){
-            if(cbs && cbs.success){
-                cbs.success(loadedTables);
+            if(cbs && cbs){
+                cbs(false, loadedTables);
             }
             return;
         }
         var tableName = tableNames.shift();
 
-        loadTableData(self, tableName, {
-            success: function(data){
+        loadTableData(self, tableName, function(err, data){
+            if(!err){
                 loadedTables[tableName] = data;
                 loadAllTableData(self, tableNames, loadedTables, cbs);
-            },
-            error: function(err){
-                if(cbs && cbs.error){
-                    cbs.error(err);
+            }else{
+                if(cbs && cbs){
+                    cbs(err);
                 }
             }
         });
@@ -175,12 +173,12 @@ var MySQLStore = function(params, callbacks){
 
         self.connection.query(tableQuery, function(err, res){
             if(!err){
-                if(cbs && cbs.success){
-                    cbs.success(res);
+                if(cbs && cbs){
+                    cbs(false, res);
                 }
             }else{
-                if(cbs && cbs.error){
-                    cbs.error(err);
+                if(cbs && cbs){
+                    cbs(err);
                 }
             }
         });
@@ -220,12 +218,12 @@ var MySQLStore = function(params, callbacks){
         var errors = [];
         if(records.length===processedRecords.length){
             if(errors.length>0){
-                if(cbs.error){
-                    cbs.error(errors, records, processedRecords);
+                if(cbs){
+                    cbs(errors, records, processedRecords);
                 }
             }else{
-                if(cbs.success){
-                    cbs.success(records);
+                if(cbs){
+                    cbs(false, records);
                 }
             }
 
@@ -295,13 +293,13 @@ var MySQLStore = function(params, callbacks){
         self.connection.query(saveSQL, setFields, function(err, res){
             if(err){
                 console.log(err);
-                if(cbs.error){
-                    cbs.error(err, recordItem);
+                if(cbs){
+                    cbs(err, recordItem);
                 }
             }else{
                 recordItem.set(pkField, recordItem.get(pkField) || res.insertId);
-                if(cbs.success){
-                    cbs.success(recordItem);
+                if(cbs){
+                    cbs(false, recordItem);
                 }
             }
         });
@@ -313,12 +311,12 @@ var MySQLStore = function(params, callbacks){
         var errors = [];
         if(records.length===processedRecords.length){
             if(errors.length>0){
-                if(cbs.error){
-                    cbs.error(errors, records, processedRecords);
+                if(cbs){
+                    cbs(errors, records, processedRecords);
                 }
             }else{
-                if(cbs.success){
-                    cbs.success(records);
+                if(cbs){
+                    cbs(false, records);
                 }
             }
 
@@ -352,19 +350,21 @@ var MySQLStore = function(params, callbacks){
 
         self.connection.query(removeSQL, setFields, function(err, res){
             if(err){
-                if(cbs.error){
-                    cbs.error(err, recordItem);
+                if(cbs){
+                    cbs(err, recordItem);
                 }
             }else{
                 //recordItem.set('id', res.insertId);
-                if(cbs.success){
-                    cbs.success(recordItem);
+                if(cbs){
+                    cbs(false, recordItem);
                 }
             }
         });
     }
 
     function objectToQuery(self, model, queryData, cbs){
+        console.log('BUILDING MYSQL STORE QUERY');
+        console.log(queryData);
         var querySQL = 'SELECT ';
         var valueArray = [];
         
@@ -379,6 +379,10 @@ var MySQLStore = function(params, callbacks){
 
         querySQL+=' FROM '+model.config.collection;
         
+        if(queryData.joins){
+            querySQL += ' INNER JOIN '+queryData.joins.model.config.collection+' ON '+model.config.collection+'.'+queryData.joins.field+' = '+queryData.joins.model.config.collection+'.'+queryData.joins.on+' ';
+        }
+
         if(queryData.where){
             querySQL+=' WHERE ';
 
@@ -389,12 +393,22 @@ var MySQLStore = function(params, callbacks){
                     for(var fieldOp in fieldCrit){
                         switch(fieldOp){
                             case 'eq':
-                                if(fieldCrit[fieldOp].length>1){
-                                    querySQL+=fieldName+' IN (?) AND ';
-                                    valueArray.push(fieldCrit[fieldOp]);
+                                if(fieldCrit[fieldOp]===null){
+                                    querySQL+= fieldName+' IS NULL AND ';
                                 }else{
-                                    querySQL+=fieldName+'=? AND ';
-                                    valueArray.push(fieldCrit[fieldOp][0]);
+                                    if(Array.isArray(fieldCrit[fieldOp]) && fieldCrit[fieldOp].length>1){
+                                        querySQL+=fieldName+' IN (?) AND ';
+                                        valueArray.push(fieldCrit[fieldOp]);
+                                    }else{
+                                        if(Array.isArray(fieldCrit[fieldOp])){
+                                            querySQL+=fieldName+'=? AND ';
+                                            valueArray.push(fieldCrit[fieldOp][0]);
+                                        }else{
+                                            querySQL+=fieldName+'=? AND ';
+                                            valueArray.push(fieldCrit[fieldOp]);
+                                        }
+                                        
+                                    }
                                 }
                                 break;
                             case 'gt':
@@ -435,7 +449,17 @@ var MySQLStore = function(params, callbacks){
             }
         }
 
-        return {sql: querySQL, values: valueArray};
+        if(queryData.order){
+            querySQL+=' ORDER BY '+queryData.order;
+        }
+
+        if(queryData.limit || queryData.offset){
+            querySQL+=' LIMIT ?, ?';
+            valueArray.push(queryData.offset?queryData.offset:0);
+            valueArray.push(queryData.limit?queryData.limit:50);
+        }
+
+        return {sql: querySQL+';', values: valueArray};
     }
 
 module.exports = MySQLStore;
